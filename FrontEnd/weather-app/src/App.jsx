@@ -18,7 +18,8 @@ const WeatherApp = () => {
 
   const handleCityChange = async (selectedOption) => {
     setSelectedCity(selectedOption);
-    setLoading(true);
+      setWeather(null);
+      setLoading(true);
 
     try {
       const data = await fetchWeatherData(selectedOption.value);

@@ -17,14 +17,37 @@ describe("WeatherApp Integration Test", () => {
 
     render(<WeatherApp />);
 
-    const countryDropdown = screen.getByPlaceholderText("select a country");
+    // Select country (mocked)
+    const countryDropdown = screen.getByPlaceholderText("Select a country");
     fireEvent.change(countryDropdown, { target: { value: "Jakarta" } });
 
+    // Select city (mocked)
     const cityDropdown = screen.getByPlaceholderText("Select a city");
     fireEvent.change(cityDropdown, { target: { value: "Jakarta" } });
 
     await waitFor(() => {
       expect(screen.getByText("Weather in Jakarta")).toBeInTheDocument();
+      expect(screen.getByText("Temperature: 22°C")).toBeInTheDocument();
+      expect(screen.getByText("Condition: Sunny")).toBeInTheDocument();
+    });
+  });
+
+  it("should display loading while fetching data", async () => {
+    fetchWeatherData.mockResolvedValue({
+      name: "Berlin",
+      main: { temp: 18 },
+      weather: [{ description: "Cloudy" }],
+    });
+
+    render(<WeatherApp />);
+
+    const cityDropdown = screen.getByPlaceholderText("Select a city");
+    fireEvent.change(cityDropdown, { target: { value: "Berlin" } });
+
+    expect(screen.getByText("Loading weather...")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.queryByText("Loading weather...")).not.toBeInTheDocument();
     });
   });
 

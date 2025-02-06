@@ -10,7 +10,7 @@ describe("Weather Service", () => {
       main: { temp: 20 },
       weather: [{ description: "Clear sky" }],
     };
-    axios.get.mockResolvedValue({ date: mockWeatherData });
+    axios.get.mockResolvedValue({ data: mockWeatherData });
 
     const result = await fetchWeatherData("London");
     expect(result).toEqual(mockWeatherData);
