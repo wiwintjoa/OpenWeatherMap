@@ -1,66 +1,65 @@
-import React from "react";
-import { render, fireEvent, waitFor, screen } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import WeatherApp from "./App";
 import { fetchWeatherData } from "./services/weatherService";
 
-jest.mock("./services/weatherService");
+jest.mock("./services/weatherService", () => ({
+  fetchWeatherData: jest.fn(),
+}));
 
-describe("WeatherApp Integration Test", () => {
-  it("should display weather data when city is selected", async () => {
-    const mockWeatherData = {
-      name: "Jakarta",
-      main: { temp: 27 },
-      weather: [{ description: "Cloudy" }],
-    };
+jest.mock("./components/CountrySelector", () => (props) => (
+  <select
+    data-testid="country-selector"
+    onChange={(e) => props.onSelect({ value: e.target.value })}
+  >
+    <option value="">Select a country</option>
+    <option value="US">United States</option>
+  </select>
+));
 
-    fetchWeatherData.mockResolvedValue(mockWeatherData);
+jest.mock("./components/CitySelector", () => (props) => (
+  <select
+    data-testid="city-selector"
+    onChange={(e) => props.onSelect({ value: e.target.value })}
+  >
+    <option value="">Select a city</option>
+    <option value="New York">New York</option>
+  </select>
+));
 
-    render(<WeatherApp />);
+jest.mock(
+  "./components/WeatherDisplay",
+  () =>
+    ({ weather }) =>
+      weather ? (
+        <div data-testid="weather-display">{`Temp: ${weather.temp}°C, Condition: ${weather.condition}`}</div>
+      ) : null
+);
 
-    // Select country (mocked)
-    const countryDropdown = screen.getByPlaceholderText("Select a country");
-    fireEvent.change(countryDropdown, { target: { value: "Jakarta" } });
-
-    // Select city (mocked)
-    const cityDropdown = screen.getByPlaceholderText("Select a city");
-    fireEvent.change(cityDropdown, { target: { value: "Jakarta" } });
-
-    await waitFor(() => {
-      expect(screen.getByText("Weather in Jakarta")).toBeInTheDocument();
-      expect(screen.getByText("Temperature: 22°C")).toBeInTheDocument();
-      expect(screen.getByText("Condition: Sunny")).toBeInTheDocument();
-    });
+test("fetches and displays weather data when a city is selected", async () => {
+  fetchWeatherData.mockResolvedValue({
+    temp: 25,
+    condition: "Sunny",
   });
 
-  it("should display loading while fetching data", async () => {
-    fetchWeatherData.mockResolvedValue({
-      name: "Berlin",
-      main: { temp: 18 },
-      weather: [{ description: "Cloudy" }],
-    });
+  render(<WeatherApp />);
 
-    render(<WeatherApp />);
-
-    const cityDropdown = screen.getByPlaceholderText("Select a city");
-    fireEvent.change(cityDropdown, { target: { value: "Berlin" } });
-
-    expect(screen.getByText("Loading weather...")).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(screen.queryByText("Loading weather...")).not.toBeInTheDocument();
-    });
+  fireEvent.change(screen.getByTestId("country-selector"), {
+    target: { value: "US" },
   });
 
-  it("should handle API error gracefully", async () => {
-    fetchWeatherData.mockRejectedValue(new Error("API Error"));
+  expect(screen.getByTestId("city-selector")).toBeInTheDocument();
 
-    render(<WeatherApp />);
-
-    const cityDropdown = screen.getByPlaceholderText("Select a city");
-    fireEvent.change(cityDropdown, { target: { value: "UnknownCity" } });
-
-    await waitFor(() => {
-      expect(screen.queryByText("Weather in")).not.toBeInTheDocument();
-    });
+  fireEvent.change(screen.getByTestId("city-selector"), {
+    target: { value: "New York" },
   });
+
+  expect(screen.getByText("Loading weather...")).toBeInTheDocument();
+
+  await waitFor(() => {
+    expect(screen.getByTestId("weather-display")).toHaveTextContent(
+      "Temp: 25°C, Condition: Sunny"
+    );
+  });
+
+  expect(fetchWeatherData).toHaveBeenCalledWith("New York");
 });

@@ -9,7 +9,7 @@ export const fetchWeatherData = async (city) => {
 
     return response.data;
   } catch (error) {
-    console.error("Error fetching weather data:", error);
+    console.log("Error fetching weather data:", error);
     throw error;
   }
 };

@@ -5,14 +5,17 @@
   "dependencies": {
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
     "axios": "^1.7.9",
+    "axios-mock-adapter": "^2.1.0",
     "cra-template": "1.2.0",
     "jest": "^27.5.1",
     "jest-fetch-mock": "^3.0.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-scripts": "5.0.1",
-    "react-select": "^5.10.0"
+    "react-select": "^5.10.0",
+    "user-event": "^3.0.3"
   },
   "scripts": {
     "start": "react-scripts start",
